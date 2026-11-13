@@ -1,0 +1,13 @@
+@model MyMvcApp.Models.AdminCustomersViewModel
+@{ ViewData["Title"] = "Khách hàng"; var stats = Model.Statistics; }
+<div class="admin-page-heading"><div><div class="admin-eyebrow">QUAN HỆ KHÁCH HÀNG</div><h1>Khách hàng</h1><p>Hồ sơ khách được tạo tự động khi đặt hàng, có thể thêm và chỉnh sửa tại đây.</p></div><a asp-action="CreateCustomer" class="admin-button admin-button-primary"><i class="bi bi-person-plus"></i> Thêm khách hàng</a></div>
+@if (TempData["AdminSuccess"] is string success) { <div class="alert alert-success">@success</div> }
+@if (TempData["AdminError"] is string error) { <div class="alert alert-danger">@error</div> }
+<div class="admin-stat-grid admin-stat-grid-compact"><div class="admin-mini-stat"><span>Tổng khách hàng</span><strong>@stats.CustomerCount</strong></div><div class="admin-mini-stat"><span>Khách mới tháng này</span><strong>@Model.Customers.Count(customer => customer.CreatedAtUtc.Month == DateTime.UtcNow.Month && customer.CreatedAtUtc.Year == DateTime.UtcNow.Year)</strong></div><div class="admin-mini-stat"><span>Đơn hàng</span><strong>@stats.TotalOrders</strong></div><div class="admin-mini-stat"><span>Tổng doanh thu</span><strong>@stats.Revenue.ToString("N0") ₫</strong></div></div>
+<section class="admin-panel"><div class="admin-toolbar"><div class="admin-search"><i class="bi bi-search"></i><input class="admin-input" type="search" placeholder="Tìm tên, email, số điện thoại..." data-table-search="#customers-table" /></div></div><div class="admin-table-wrap"><table class="admin-table" id="customers-table"><thead><tr><th>Khách hàng</th><th>Email</th><th>Số điện thoại</th><th>Số đơn</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead><tbody>
+@foreach (var customer in Model.Customers)
+{
+    <tr><td><strong>@customer.FullName</strong></td><td>@customer.Email</td><td>@customer.Phone</td><td>@customer.Orders.Count</td><td>@customer.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy")</td><td><div class="table-actions"><a asp-action="EditCustomer" asp-route-id="@customer.Id" class="table-action-button table-action-edit"><i class="bi bi-pencil-square"></i><span>Sửa</span></a><form asp-action="DeleteCustomer" asp-route-id="@customer.Id" method="post" onsubmit="return confirm('Xóa khách hàng @customer.FullName?')"><button class="table-action-button table-action-delete" type="submit"><i class="bi bi-trash3"></i><span>Xóa</span></button></form></div></td></tr>
+}
+@if (Model.Customers.Count == 0) { <tr><td colspan="6"><div class="admin-empty-state"><i class="bi bi-people"></i><strong>Chưa có khách hàng</strong><span>Khách hàng sẽ được thêm khi gửi đơn đặt xe.</span></div></td></tr> }
+</tbody></table></div><div class="admin-table-footer"><span>Đang hiển thị @Model.Customers.Count khách hàng</span></div></section>

@@ -1,0 +1,12 @@
+@model MyMvcApp.Models.AdminStaffViewModel
+@{ ViewData["Title"] = "Nhân viên"; }
+<div class="admin-page-heading"><div><div class="admin-eyebrow">ĐỘI NGŨ CỬA HÀNG</div><h1>Quản lý nhân viên</h1><p>Quản lý hồ sơ nhân viên lưu trong cơ sở dữ liệu.</p></div><a asp-action="CreateStaff" class="admin-button admin-button-primary"><i class="bi bi-person-plus"></i> Thêm nhân viên</a></div>
+@if (TempData["AdminSuccess"] is string success) { <div class="alert alert-success">@success</div> }
+<div class="admin-stat-grid admin-stat-grid-compact"><div class="admin-mini-stat"><span>Tổng nhân viên</span><strong>@Model.Statistics.StaffCount</strong></div><div class="admin-mini-stat"><span>Đang làm việc</span><strong class="text-success">@Model.Statistics.ActiveStaffCount</strong></div><div class="admin-mini-stat"><span>Đã tạm ngưng</span><strong>@(Model.Statistics.StaffCount - Model.Statistics.ActiveStaffCount)</strong></div><div class="admin-mini-stat"><span>Showroom</span><strong>@Model.Members.Select(member => member.StoreLocation).Distinct().Count()</strong></div></div>
+<section class="admin-panel"><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Nhân viên</th><th>Email</th><th>Vai trò</th><th>Showroom</th><th>Ngày tham gia</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
+@foreach (var member in Model.Members)
+{
+    <tr><td><strong>@member.FullName</strong></td><td>@member.Email</td><td>@member.Role</td><td>@member.StoreLocation</td><td>@member.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy")</td><td><span class="status-pill @(member.IsActive ? "status-active" : "status-cancelled")">@(member.IsActive ? "Đang hoạt động" : "Tạm ngưng")</span></td><td><div class="table-actions"><a asp-action="EditStaff" asp-route-id="@member.Id" class="table-action-button table-action-edit"><i class="bi bi-pencil-square"></i><span>Sửa</span></a><form asp-action="DeleteStaff" asp-route-id="@member.Id" method="post" onsubmit="return confirm('Xóa hồ sơ @member.FullName?')"><button class="table-action-button table-action-delete" type="submit"><i class="bi bi-trash3"></i><span>Xóa</span></button></form></div></td></tr>
+}
+@if (Model.Members.Count == 0) { <tr><td colspan="7"><div class="admin-empty-state"><i class="bi bi-person-badge"></i><strong>Chưa có hồ sơ nhân viên</strong><span>Tài khoản admin xác thực riêng, không tự sinh hồ sơ nhân sự.</span></div></td></tr> }
+</tbody></table></div></section>

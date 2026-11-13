@@ -1,0 +1,58 @@
+@model MyMvcApp.Models.AdminStatisticsViewModel
+@{
+    ViewData["Title"] = "Tổng quan";
+    var months = new[] { "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12" };
+    var maxMonthlyRevenue = Model.MonthlyRevenue.DefaultIfEmpty(0).Max();
+    var chartTicks = new[] { maxMonthlyRevenue, maxMonthlyRevenue * 0.75m, maxMonthlyRevenue * 0.5m, maxMonthlyRevenue * 0.25m, 0m };
+}
+
+<div class="admin-page-heading">
+    <div>
+        <div class="admin-eyebrow">TỔNG QUAN CỬA HÀNG</div>
+        <h1>Chào buổi sáng, Admin <span>👋</span></h1>
+        <p>Số liệu sẽ tăng khi cửa hàng có đơn hàng và dữ liệu phát sinh.</p>
+    </div>
+    <button class="admin-button admin-button-light" type="button" data-reload-page><i class="bi bi-arrow-clockwise"></i> Làm mới</button>
+</div>
+
+<div class="admin-stat-grid">
+    <article class="admin-stat-card"><div class="stat-icon stat-purple"><i class="bi bi-currency-exchange"></i></div><span>Doanh thu tích lũy</span><strong>@Model.Revenue.ToString("N0") ₫</strong><small class="stat-neutral">Từ các đơn đã hoàn tất</small></article>
+    <article class="admin-stat-card"><div class="stat-icon stat-blue"><i class="bi bi-receipt"></i></div><span>Tổng đơn hàng</span><strong>@Model.TotalOrders</strong><small class="stat-neutral">@Model.PendingOrders chờ · @Model.ShippingOrders đang giao</small></article>
+    <article class="admin-stat-card"><div class="stat-icon stat-green"><i class="bi bi-people"></i></div><span>Khách hàng</span><strong>@Model.CustomerCount</strong><small class="stat-neutral">Chưa có tài khoản khách hàng trong dữ liệu</small></article>
+    <article class="admin-stat-card"><div class="stat-icon stat-orange"><i class="bi bi-bicycle"></i></div><span>Sản phẩm trong danh mục</span><strong>@Model.ProductCount</strong><small class="stat-neutral">Xe mẫu hiện có trong catalog</small></article>
+</div>
+
+<div class="admin-dashboard-grid">
+    <section class="admin-panel sales-panel">
+        <div class="admin-panel-heading"><div><h2>Doanh thu</h2><p>Doanh thu sẽ được tổng hợp từ đơn hàng hoàn tất.</p></div><select class="admin-select" aria-label="Khoảng thời gian"><option>Năm hiện tại</option></select></div>
+        <div class="chart-summary" aria-live="polite"><strong id="monthly-revenue-value">@Model.MonthlyRevenue.Sum().ToString("N0") ₫</strong><span id="monthly-revenue-label" class="stat-neutral">Tổng doanh thu năm nay</span></div>
+        <div class="sales-chart" aria-label="Biểu đồ doanh thu theo tháng">
+            <div class="chart-y-axis">@foreach (var tick in chartTicks) { <span>@tick.ToString("N0") ₫</span> }</div>
+            <div class="chart-bars" role="group" aria-label="Chọn một tháng để xem doanh thu">
+                @for (var index = 0; index < months.Length; index++)
+                {
+                    var revenue = index < Model.MonthlyRevenue.Count ? Model.MonthlyRevenue[index] : 0;
+                    var height = maxMonthlyRevenue > 0 ? Math.Max(4, (double)(revenue / maxMonthlyRevenue * 100)) : 0;
+                    <div class="chart-column"><button class="chart-month" type="button" style="--bar-index:@index" data-month="@months[index]" data-revenue="@revenue.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-display="@revenue.ToString("N0") ₫" aria-label="@months[index], doanh thu @revenue.ToString("N0") đồng" title="@months[index]: @revenue.ToString("N0") ₫"><span class="chart-bar" style="height:@height.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%"></span><span class="chart-month-label">@months[index]</span></button></div>
+                }
+            </div>
+        </div>
+    </section>
+    <section class="admin-panel">
+        <div class="admin-panel-heading"><div><h2>Đơn hàng gần đây</h2><p>Đơn mới nhất từ checkout của cửa hàng.</p></div><a asp-action="Orders" class="admin-text-link">Xem tất cả <i class="bi bi-arrow-right"></i></a></div>
+        @if (Model.RecentOrders.Count == 0) { <div class="admin-empty-state"><i class="bi bi-receipt"></i><strong>Chưa có đơn hàng</strong><span>Tổng tiền hiện tại: 0 ₫</span></div> }
+        else { <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Tổng tiền</th><th>Trạng thái</th></tr></thead><tbody>@foreach (var order in Model.RecentOrders) { <tr><td>#@order.OrderNumber</td><td>@order.Customer.FullName</td><td>@order.TotalAmount.ToString("N0") ₫</td><td>@order.Status</td></tr> }</tbody></table></div> }
+    </section>
+</div>
+
+<div class="admin-dashboard-grid admin-dashboard-bottom">
+    <section class="admin-panel">
+        <div class="admin-panel-heading"><div><h2>Sản phẩm bán chạy</h2><p>Xếp hạng từ các đơn đã hoàn tất.</p></div><a asp-action="Products" class="admin-text-link">Quản lý xe <i class="bi bi-arrow-right"></i></a></div>
+        @if (Model.TopSellingProducts.Count == 0) { <div class="admin-empty-state"><i class="bi bi-bicycle"></i><strong>Chưa có dữ liệu bán hàng</strong><span>Số lượng bán của các sản phẩm hiện là 0.</span></div> }
+        else { var rank = 0; foreach (var product in Model.TopSellingProducts) { rank++; <div class="top-product"><span class="rank-number">@rank.ToString("00")</span><div><strong>@product.Name</strong></div><span class="top-product-sales">@product.Quantity xe</span></div> } }
+    </section>
+    <section class="admin-panel">
+        <div class="admin-panel-heading"><div><h2>Cần chú ý</h2><p>Các mục chờ xử lý</p></div></div>
+        <div class="admin-empty-state"><i class="bi bi-check2-circle"></i><strong>Không có mục cần xử lý</strong><span>0 đơn chờ xác nhận · 0 đánh giá chờ phản hồi</span></div>
+    </section>
+</div>

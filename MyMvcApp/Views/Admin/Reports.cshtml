@@ -1,0 +1,21 @@
+@model MyMvcApp.Models.AdminStatisticsViewModel
+@{
+    ViewData["Title"] = "Báo cáo";
+    var months = new[] { "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12" };
+    var maximum = Model.MonthlyRevenue.DefaultIfEmpty(0).Max();
+    var averageOrder = Model.CompletedOrders == 0 ? 0 : Model.Revenue / Model.CompletedOrders;
+    var startDate = Context.Request.Query["start"].ToString();
+    var endDate = Context.Request.Query["end"].ToString();
+}
+<div class="admin-page-heading"><div><div class="admin-eyebrow">PHÂN TÍCH KINH DOANH</div><h1>Báo cáo & thống kê</h1><p>Số liệu được tổng hợp từ dữ liệu đơn hàng đã lưu.</p></div><a asp-action="ExportReport" asp-route-start="@startDate" asp-route-end="@endDate" class="admin-button admin-button-primary"><i class="bi bi-download"></i> Xuất CSV</a></div>
+<form asp-action="Reports" method="get" class="admin-report-filters"><label>Từ ngày<input class="admin-input" type="date" name="start" value="@startDate" /></label><label>Đến ngày<input class="admin-input" type="date" name="end" value="@endDate" /></label><button class="admin-button admin-button-light" type="submit"><i class="bi bi-funnel"></i> Áp dụng</button><a asp-action="Reports" class="admin-button admin-button-light">Xóa lọc</a></form>
+<div class="admin-stat-grid"><article class="admin-stat-card"><div class="stat-icon stat-purple"><i class="bi bi-currency-exchange"></i></div><span>Tổng doanh thu hoàn tất</span><strong>@Model.Revenue.ToString("N0") ₫</strong></article><article class="admin-stat-card"><div class="stat-icon stat-blue"><i class="bi bi-bag-check"></i></div><span>Đơn hoàn tất</span><strong>@Model.CompletedOrders</strong></article><article class="admin-stat-card"><div class="stat-icon stat-green"><i class="bi bi-receipt-cutoff"></i></div><span>Giá trị đơn trung bình</span><strong>@averageOrder.ToString("N0") ₫</strong></article><article class="admin-stat-card"><div class="stat-icon stat-orange"><i class="bi bi-person-plus"></i></div><span>Khách hàng</span><strong>@Model.CustomerCount</strong></article></div>
+<div class="admin-dashboard-grid"><section class="admin-panel sales-panel"><div class="admin-panel-heading"><div><h2>Doanh thu theo tháng</h2><p>Đơn hàng hoàn tất · theo năm</p></div></div><div class="report-chart">
+@for (var index = 0; index < months.Length; index++)
+{
+    var amount = index < Model.MonthlyRevenue.Count ? Model.MonthlyRevenue[index] : 0;
+    var height = maximum > 0 ? Math.Max(4, (double)(amount / maximum * 100)) : 0;
+    <div class="report-bar" style="height:@height.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%"><span>@amount.ToString("N0") ₫</span><small>@months[index]</small></div>
+}
+</div></section><section class="admin-panel"><div class="admin-panel-heading"><div><h2>Cơ cấu đơn hàng</h2><p>@Model.TotalOrders đơn trong khoảng đã chọn</p></div></div><div class="admin-empty-state"><i class="bi bi-pie-chart"></i><strong>@Model.CompletedOrders hoàn tất</strong><span>@Model.CancelledOrders đã hủy · @Model.PendingOrders đang chờ · doanh thu @Model.Revenue.ToString("N0") ₫</span></div></section></div>
+<section class="admin-panel mt-4"><div class="admin-panel-heading"><div><h2>Sản phẩm đã bán</h2><p>Số lượng được tính từ đơn hàng đã hoàn tất.</p></div></div>@if (Model.TopSellingProducts.Count == 0) { <div class="admin-empty-state"><i class="bi bi-bar-chart"></i><strong>Chưa có dữ liệu bán hàng</strong><span>Số lượng bán và doanh thu sản phẩm hiện bằng 0.</span></div> } else { <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Sản phẩm</th><th>Đã bán</th><th>Doanh thu trước ưu đãi</th></tr></thead><tbody>@foreach (var product in Model.TopSellingProducts) { <tr><td>@product.Name</td><td>@product.Quantity xe</td><td>@product.Revenue.ToString("N0") ₫</td></tr> }</tbody></table></div> }</section>

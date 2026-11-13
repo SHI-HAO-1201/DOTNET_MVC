@@ -1,0 +1,30 @@
+@model MyMvcApp.Models.AdminProductInput
+@{ ViewData["Title"] = Model.Id == 0 ? "Thêm sản phẩm" : "Sửa sản phẩm"; }
+<div class="admin-page-heading"><div><div class="admin-eyebrow">DANH MỤC CỬA HÀNG</div><h1>@ViewData["Title"]</h1><p>Thông tin được lưu trực tiếp vào cơ sở dữ liệu của cửa hàng.</p></div><a asp-action="Products" class="admin-button admin-button-light"><i class="bi bi-arrow-left"></i> Quay lại</a></div>
+<section class="admin-panel">
+    <form asp-action="SaveProduct" method="post">
+        <input asp-for="Id" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+        <div class="settings-form-grid">
+            <label class="admin-field">Tên xe <input asp-for="Name" class="admin-input" /></label>
+            <label class="admin-field">Mã sản phẩm <input asp-for="Code" class="admin-input" /></label>
+            <label class="admin-field">Thương hiệu <input asp-for="Brand" class="admin-input" /></label>
+            <label class="admin-field">Dòng xe <input asp-for="Type" class="admin-input" placeholder="Sportbike, Nakedbike, Xe tay ga..." /></label>
+            <label class="admin-field">Giá bán (VND) <input asp-for="Price" class="admin-input" type="number" min="0" step="1000" /></label>
+            <label class="admin-field full-field">Mô tả xe <textarea asp-for="Engine" class="admin-input" rows="4" maxlength="4000" placeholder="Mô tả mẫu xe"></textarea></label>
+            <label class="admin-field full-field">Ảnh Unsplash <input asp-for="Image" class="admin-input" placeholder="photo-1568772585407-9361f9bf3a87" /><small>Nhập mã ảnh Unsplash như các sản phẩm mẫu.</small></label>
+            <label class="admin-field">Tồn kho ban đầu <input asp-for="StockQuantity" class="admin-input" type="number" min="0" /></label>
+            <label class="admin-field">Trạng thái bán xe
+                <select asp-for="AvailabilityStatus" class="admin-select">
+                    <option value="ForSale">Còn hàng</option>
+                    <option value="Incoming">Đang nhập hàng</option>
+                </select>
+                <small>Chọn “Còn hàng” cần có tồn kho lớn hơn 0. Xe đang nhập hàng chưa thể đặt mua.</small>
+                <span asp-validation-for="AvailabilityStatus" class="text-danger"></span>
+                <span asp-validation-for="StockQuantity" class="text-danger"></span>
+            </label>
+            <label class="setting-toggle"><span><strong>Hiển thị trên cửa hàng</strong><small>Tắt để tạm ẩn sản phẩm, không xóa lịch sử đơn hàng.</small></span><input asp-for="IsActive" type="checkbox" /><span class="toggle-ui"></span></label>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-4"><a asp-action="Products" class="admin-button admin-button-light">Hủy</a><button class="admin-button admin-button-primary" type="submit"><i class="bi bi-check2"></i> Lưu sản phẩm</button></div>
+    </form>
+</section>

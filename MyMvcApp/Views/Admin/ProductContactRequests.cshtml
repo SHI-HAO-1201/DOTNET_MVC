@@ -1,0 +1,19 @@
+﻿@model IReadOnlyList<MyMvcApp.Data.ProductContactRequest>
+@{ ViewData["Title"] = "Khách chờ xe"; }
+<div class="admin-page-heading"><div><div class="admin-eyebrow">CHĂM SÓC KHÁCH HÀNG</div><h1>Khách quan tâm xe đang nhập</h1><p>Thông tin khách để lại cho các mẫu đang nhập hàng. Liên hệ khách qua số điện thoại hoặc email bên dưới.</p></div></div>
+@if (TempData["AdminSuccess"] is string success) { <div class="alert alert-success">@success</div> }
+<section class="admin-panel"><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Khách hàng</th><th>Mẫu xe quan tâm</th><th>Thông tin liên hệ</th><th>Ghi chú</th><th>Thời gian</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
+@foreach (var request in Model)
+{
+    <tr>
+        <td><strong>@request.FullName</strong></td>
+        <td>@request.Motorcycle.Name <small class="table-subline">@request.Motorcycle.Code</small></td>
+        <td><a href="tel:@request.Phone">@request.Phone</a>@if (!string.IsNullOrWhiteSpace(request.Email)) { <small class="table-subline"><a href="mailto:@request.Email">@request.Email</a></small> }</td>
+        <td>@(string.IsNullOrWhiteSpace(request.Note) ? "—" : request.Note)</td>
+        <td>@request.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+        <td><span class="status-pill @(request.IsContacted ? "status-active" : "status-pending")">@(request.IsContacted ? "Đã liên hệ" : "Chờ liên hệ")</span></td>
+        <td><div class="d-flex gap-2"><form asp-action="MarkProductContactRequest" method="post"><input type="hidden" name="id" value="@request.Id" /><input type="hidden" name="isContacted" value="@(!request.IsContacted)" /><button class="admin-button admin-button-light" type="submit">@(request.IsContacted ? "Mở lại" : "Đánh dấu đã gọi")</button></form><form asp-action="DeleteProductContactRequest" method="post" onsubmit="return confirm('Xóa yêu cầu liên hệ này?')"><input type="hidden" name="id" value="@request.Id" /><button class="admin-button admin-button-light" type="submit" aria-label="Xóa yêu cầu">Xóa</button></form></div></td>
+    </tr>
+}
+@if (Model.Count == 0) { <tr><td colspan="7"><div class="admin-empty-state"><i class="bi bi-person-lines-fill"></i><strong>Chưa có khách chờ xe</strong><span>Khi khách gửi yêu cầu từ trang xe đang nhập hàng, thông tin sẽ xuất hiện tại đây.</span></div></td></tr> }
+</tbody></table></div><div class="admin-table-footer"><span>Tổng yêu cầu: <strong>@Model.Count</strong></span><span>Chờ liên hệ: <strong>@Model.Count(request => !request.IsContacted)</strong></span></div></section>

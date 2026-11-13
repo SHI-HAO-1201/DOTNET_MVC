@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Tạo tài khoản";
+}
+
+<section class="auth-page">
+    <div class="auth-card">
+        <a asp-controller="Home" asp-action="Index" class="auth-logo">MOTO<span>SPEED</span></a>
+        <div class="eyebrow mt-4">THÀNH VIÊN MOTOSPEED</div>
+        <h1>Tạo tài khoản</h1>
+        <p class="text-secondary">Lưu xe yêu thích, theo dõi đơn hàng và nhận ưu đãi thành viên.</p>
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+        <form asp-controller="Account" asp-action="Register" method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label class="form-label" for="fullName">Họ và tên</label>
+                <input class="form-control dark-input" id="fullName" name="fullName" autocomplete="name" placeholder="Nguyễn Văn An" value="@ViewData["fullName"]" required minlength="2" maxlength="100" />
+                <span class="text-danger small">@Html.ValidationMessage("fullName")</span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="email">Email</label>
+                <input class="form-control dark-input" id="email" name="email" type="email" autocomplete="email" placeholder="ban@email.com" value="@ViewData["email"]" required maxlength="320" />
+                <span class="text-danger small">@Html.ValidationMessage("email")</span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="password">Mật khẩu</label>
+                <div class="password-field">
+                    <input class="form-control dark-input" id="password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="256" placeholder="Tối thiểu 8 ký tự" required />
+                    <button class="password-toggle" type="button" data-password-toggle="#password" aria-label="Hiện mật khẩu">Hiện</button>
+                </div>
+                <span class="text-danger small">@Html.ValidationMessage("password")</span>
+            </div>
+            <div class="form-check mb-4">
+                <input class="form-check-input" id="terms" type="checkbox" required />
+                <label class="form-check-label small text-secondary" for="terms">Tôi đồng ý với <a asp-controller="Home" asp-action="Privacy" class="text-link">Điều khoản sử dụng</a> và chính sách bảo mật.</label>
+            </div>
+            <button class="btn btn-neon-danger w-100 rounded-pill py-3" type="submit">Tạo tài khoản</button>
+        </form>
+        <p class="text-center text-secondary mt-4 mb-0">Đã có tài khoản? <a asp-action="Login" class="text-link">Đăng nhập</a></p>
+    </div>
+</section>

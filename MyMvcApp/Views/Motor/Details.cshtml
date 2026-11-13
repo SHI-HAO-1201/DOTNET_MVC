@@ -1,0 +1,57 @@
+@model MyMvcApp.Data.Motorcycle
+@{
+    var bike = Model;
+    var reviews = ViewData["Reviews"] as IReadOnlyList<MyMvcApp.Data.MotorcycleReview> ?? Array.Empty<MyMvcApp.Data.MotorcycleReview>();
+    var averageRating = reviews.Count == 0 ? 0 : reviews.Average(review => review.Rating);
+    ViewData["Title"] = bike.Name;
+}
+<div class="container py-4">
+    @if (TempData["ContactRequestSuccess"] is string requestSuccess) { <div class="alert alert-success" role="status">@requestSuccess</div> }
+    @if (TempData["ContactRequestError"] is string requestError) { <div class="alert alert-danger" role="alert">@requestError</div> }
+    <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li><li class="breadcrumb-item"><a asp-action="Index">Mô tô</a></li><li class="breadcrumb-item active">@bike.Name</li></ol></nav>
+    <div class="row g-5 py-3">
+        <div class="col-lg-7"><div class="detail-image"><img src="@bike.ImageUrl" alt="@bike.Name" /><span class="product-tag">XE CHÍNH HÃNG</span></div><div class="detail-thumbnails"><img src="@bike.ImageUrl" alt="Góc trước @bike.Name" /><img src="https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=240&q=65" alt="Chi tiết xe @bike.Name" /><img src="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=240&q=65" alt="Góc bên @bike.Name" /></div></div>
+        <div class="col-lg-5"><div class="product-brand">@bike.Brand · @bike.Type</div><h1 class="detail-title">@bike.Name</h1><div class="rating-line"><span class="stars">@(reviews.Count == 0 ? "☆☆☆☆☆" : "★★★★★")</span> @averageRating.ToString("0.0") <span class="text-secondary">(@reviews.Count đánh giá)</span></div><div class="detail-price">@bike.Price.ToString("N0") ₫</div><p class="text-secondary">Giá niêm yết đã bao gồm VAT. Hỗ trợ đăng ký, giao xe tận nơi và trả góp linh hoạt.</p>
+            <div class="detail-benefits"><div><i class="bi bi-patch-check"></i><span><strong>Chính hãng 100%</strong><small>Đầy đủ giấy tờ và nguồn gốc</small></span></div><div><i class="bi bi-shield-check"></i><span><strong>Bảo hành 24 tháng</strong><small>Bảo hành theo tiêu chuẩn hãng</small></span></div><div><i class="bi bi-truck"></i><span><strong>Giao xe toàn quốc</strong><small>Nhân viên xác nhận thời gian giao</small></span></div></div>
+            @if (bike.CanBePurchased)
+            {
+                <div class="d-flex gap-2 mt-4"><button class="btn btn-neon-danger btn-lg rounded-pill flex-grow-1 add-cart" type="button" data-id="@bike.Id" data-name="@bike.Name" data-price="@bike.Price" data-image="@bike.ImageUrl"><i class="bi bi-bag-plus me-2"></i>Thêm vào giỏ</button><a class="btn btn-outline-light btn-lg rounded-pill" asp-controller="Home" asp-action="Contact" aria-label="Gọi tư vấn"><i class="bi bi-telephone"></i></a></div>
+            }
+            else if (bike.AvailabilityStatus == MyMvcApp.Data.MotorcycleAvailabilityStatus.Incoming)
+            {
+                <div class="alert alert-info mt-4"><strong>Xe đang nhập hàng.</strong> Để lại thông tin, nhân viên sẽ liên hệ bạn khi xe về.</div>
+            }
+            @if (bike.CanBePurchased) { <a asp-controller="Home" asp-action="Contact" class="text-link d-inline-block mt-3"><i class="bi bi-calendar2-check me-1"></i>Đặt lịch lái thử miễn phí</a> }
+            <div class="detail-code">Mã sản phẩm: @bike.Code <span>·</span> @(bike.CanBePurchased ? $"Còn hàng · Còn {bike.StockQuantity} xe" : "Đang nhập hàng")</div>
+        </div>
+    </div>
+    <section class="spec-section mt-5"><div class="eyebrow">THÔNG TIN XE</div><h2>Thông tin <span>sản phẩm</span></h2><div class="row g-3 mt-2"><div class="col-6 col-lg-3"><div class="spec-card"><i class="bi bi-tags"></i><small>Thương hiệu</small><strong>@bike.Brand</strong></div></div><div class="col-6 col-lg-3"><div class="spec-card"><i class="bi bi-bicycle"></i><small>Dòng xe</small><strong>@bike.Type</strong></div></div><div class="col-6 col-lg-3"><div class="spec-card"><i class="bi bi-box-seam"></i><small>Tồn kho</small><strong>@bike.StockQuantity</strong></div></div><div class="col-6 col-lg-3"><div class="spec-card"><i class="bi bi-info-circle"></i><small>Tình trạng</small><strong>@bike.AvailabilityStatus</strong></div></div></div><div class="content-panel mt-4"><h3>Mô tả xe</h3><p class="mb-0">@bike.Engine</p></div></section>
+</div>
+
+@if (bike.AvailabilityStatus == MyMvcApp.Data.MotorcycleAvailabilityStatus.Incoming)
+{
+    <section class="container pb-5" id="incoming-contact">
+        <div class="content-panel">
+            <div class="eyebrow">NHẬN TƯ VẤN KHI XE VỀ</div>
+            <h2 class="mt-2">Để lại thông tin <span>liên hệ</span></h2>
+            <p class="text-secondary">Chúng tôi chỉ dùng thông tin để liên hệ về mẫu @bike.Name.</p>
+            <form asp-action="RequestIncomingProduct" method="post" class="row g-3">
+                <input type="hidden" name="MotorcycleId" value="@bike.Id" />
+                <div class="col-md-6"><label class="form-label" for="incoming-name">Họ và tên</label><input class="form-control dark-input" id="incoming-name" name="FullName" maxlength="120" required /></div>
+                <div class="col-md-6"><label class="form-label" for="incoming-phone">Số điện thoại</label><input class="form-control dark-input" id="incoming-phone" name="Phone" type="tel" maxlength="30" autocomplete="tel" required /></div>
+                <div class="col-md-6"><label class="form-label" for="incoming-email">Email (không bắt buộc)</label><input class="form-control dark-input" id="incoming-email" name="Email" type="email" maxlength="320" autocomplete="email" /></div>
+                <div class="col-12"><label class="form-label" for="incoming-note">Ghi chú</label><textarea class="form-control dark-input" id="incoming-note" name="Note" rows="3" maxlength="1000" placeholder="Thời gian thuận tiện để liên hệ..."></textarea></div>
+                <div class="col-12"><button class="btn btn-neon-danger rounded-pill px-4" type="submit"><i class="bi bi-send me-2"></i>Gửi thông tin liên hệ</button></div>
+            </form>
+        </div>
+    </section>
+}
+
+<section class="container py-5" id="reviews"><div class="section-heading"><div><div class="eyebrow">TRẢI NGHIỆM THỰC TẾ</div><h2>Đánh giá <span>khách hàng</span></h2></div><span>@reviews.Count đánh giá</span></div>
+    @if (TempData["ReviewSuccess"] is string reviewSuccess) { <div class="alert alert-success mt-3">@reviewSuccess</div> }
+    @if (TempData["ReviewError"] is string reviewError) { <div class="alert alert-danger mt-3">@reviewError</div> }
+    <div class="row g-4 mt-2"><div class="col-lg-7">
+        @if (reviews.Count == 0) { <div class="content-panel"><h3>Chưa có đánh giá</h3><p class="text-secondary mb-0">Hãy là người đầu tiên chia sẻ trải nghiệm về mẫu xe này.</p></div> }
+        @foreach (var review in reviews) { <article class="content-panel mb-3"><div class="d-flex justify-content-between"><strong>@review.ReviewerName</strong><span class="stars">@string.Concat(Enumerable.Repeat("★", review.Rating))@string.Concat(Enumerable.Repeat("☆", 5 - review.Rating))</span></div><small class="text-secondary">@review.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy")</small><p class="mt-3 mb-0">@review.Comment</p>@if (!string.IsNullOrWhiteSpace(review.AdminReply)) { <div class="review-reply mt-3"><strong>MOTOSPEED phản hồi</strong><p>@review.AdminReply</p></div> }</article> }
+    </div><div class="col-lg-5"><div class="content-panel"><h3>Viết đánh giá</h3><form asp-controller="Motor" asp-action="SubmitReview" method="post"><input type="hidden" name="MotorcycleId" value="@bike.Id" /><label class="form-label" for="review-name">Tên hiển thị</label><input class="form-control dark-input mb-3" id="review-name" name="ReviewerName" maxlength="120" required /><label class="form-label" for="review-email">Email</label><input class="form-control dark-input mb-3" id="review-email" name="ReviewerEmail" type="email" maxlength="320" required /><label class="form-label" for="review-rating">Đánh giá</label><select class="form-select dark-input mb-3" id="review-rating" name="Rating"><option value="5">5 sao</option><option value="4">4 sao</option><option value="3">3 sao</option><option value="2">2 sao</option><option value="1">1 sao</option></select><label class="form-label" for="review-comment">Nội dung</label><textarea class="form-control dark-input" id="review-comment" name="Comment" rows="4" minlength="10" maxlength="2000" required></textarea><button class="btn btn-neon-danger rounded-pill px-4 mt-3" type="submit">Gửi đánh giá</button></form></div></div></div>
+</section>
