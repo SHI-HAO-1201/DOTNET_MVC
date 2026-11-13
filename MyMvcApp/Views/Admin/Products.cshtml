@@ -1,0 +1,34 @@
+@model IReadOnlyList<MyMvcApp.Data.Motorcycle>
+@{ ViewData["Title"] = "Sản phẩm"; }
+<div class="admin-page-heading"><div><div class="admin-eyebrow">DANH MỤC CỬA HÀNG</div><h1>Quản lý sản phẩm</h1><p>Sản phẩm được lưu trực tiếp trong dbo.XeMays.</p></div><a asp-action="CreateProduct" class="admin-button admin-button-primary"><i class="bi bi-plus-lg"></i> Thêm sản phẩm</a></div>
+@if (TempData["AdminSuccess"] is string success) { <div class="alert alert-success">@success</div> }
+@if (TempData["AdminError"] is string error) { <div class="alert alert-danger">@error</div> }
+<div class="admin-stat-grid admin-stat-grid-compact"><div class="admin-mini-stat"><span>Tổng sản phẩm</span><strong>@Model.Count</strong></div><div class="admin-mini-stat"><span>Còn hàng</span><strong>@Model.Count(product => product.CanBePurchased)</strong></div><div class="admin-mini-stat"><span>Đang nhập hàng</span><strong>@Model.Count(product => product.StockQuantity == 0 && product.IsActive)</strong></div><div class="admin-mini-stat"><span>Đang ẩn</span><strong>@Model.Count(product => !product.IsActive)</strong></div></div>
+<section class="admin-panel"><div class="admin-toolbar"><div class="admin-search"><i class="bi bi-search"></i><input class="admin-input" type="search" placeholder="Tìm tên xe, mã sản phẩm..." data-table-search="#products-table" /></div><select class="admin-select" aria-label="Lọc dòng xe"><option value="">Tất cả dòng xe</option>@foreach (var type in Model.Select(product => product.Type).Distinct().OrderBy(value => value)) { <option>@type</option> }</select><a asp-action="ExportProducts" class="admin-button admin-button-light"><i class="bi bi-download"></i> Xuất CSV</a></div><div class="admin-table-wrap"><table class="admin-table" id="products-table"><thead><tr><th>Sản phẩm</th><th>Mã xe</th><th>Thương hiệu</th><th>Dòng xe</th><th>Giá bán</th><th>Tồn kho</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>
+@foreach (var bike in Model)
+{
+    <tr><td><div class="table-product"><img src="@bike.ImageUrl" alt="@bike.Name" /><span><strong>@bike.Name</strong><small>@bike.Engine</small></span></div></td><td>@bike.Code</td><td>@bike.Brand</td><td>@bike.Type</td><td><strong>@bike.Price.ToString("N0") ₫</strong></td><td>@bike.StockQuantity</td><td><span class="status-pill @(bike.CanBePurchased ? "status-active" : "status-pending")">@(bike.CanBePurchased ? "Còn hàng" : bike.StockQuantity == 0 && bike.IsActive ? "Đang nhập hàng" : "Đang ẩn")</span></td><td><div class="table-actions"><a asp-action="EditProduct" asp-route-id="@bike.Id" class="table-action-button table-action-edit"><i class="bi bi-pencil-square"></i><span>Sửa</span></a><form asp-action="DeleteProduct" asp-route-id="@bike.Id" method="post" onsubmit="return confirm('Ngừng kinh doanh @bike.Name? Lịch sử đơn hàng sẽ được giữ lại.')"><button class="table-action-button table-action-delete" type="submit"><i class="bi bi-slash-circle"></i><span>Ngừng bán</span></button></form><form asp-action="ToggleProductVisibility" asp-route-id="@bike.Id" method="post" data-preserve-scroll><button class="table-action-button table-action-visibility" type="submit" title="@(bike.IsActive ? "Ẩn khỏi cửa hàng" : "Hiện trên cửa hàng")"><i class="bi @(bike.IsActive ? "bi-eye-slash" : "bi-eye")"></i><span>@(bike.IsActive ? "Ẩn" : "Hiện")</span></button></form></div></td></tr>
+}
+@if (Model.Count == 0) { <tr><td colspan="8"><div class="admin-empty-state"><i class="bi bi-bicycle"></i><strong>Chưa có sản phẩm</strong><span>Thêm xe đầu tiên vào danh mục.</span></div></td></tr> }
+</tbody></table></div><div class="admin-table-footer"><span>Đang hiển thị @Model.Count sản phẩm</span><span>Tổng tồn kho: <strong>@Model.Sum(product => product.StockQuantity)</strong></span></div></section>
+@section Scripts {
+<script>
+(() => {
+    const storageKey = 'admin-products-scroll-position';
+    const savedScrollPosition = sessionStorage.getItem(storageKey);
+
+    if (savedScrollPosition !== null) {
+        sessionStorage.removeItem(storageKey);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            window.scrollTo(0, Number(savedScrollPosition));
+        }));
+    }
+
+    document.querySelectorAll('form[data-preserve-scroll]').forEach(form => {
+        form.addEventListener('submit', () => {
+            sessionStorage.setItem(storageKey, String(window.scrollY));
+        });
+    });
+})();
+</script>
+}

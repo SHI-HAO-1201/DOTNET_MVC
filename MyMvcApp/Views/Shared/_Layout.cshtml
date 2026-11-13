@@ -1,0 +1,57 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var activeBrand = ViewData["Brand"] as string ?? Context.Request.Query["brand"].ToString();
+    var isHomeActive = currentController == "Home" && currentAction == "Index";
+    var isMotorActive = currentController == "Motor";
+    var isBrandActive = currentController == "Motor" && currentAction == "ByCategory";
+    var isAboutActive = currentController == "Home" && currentAction == "About";
+    var isContactActive = currentController == "Home" && currentAction == "Contact";
+    var isCartActive = currentController == "Shopping";
+    var isAccountActive = currentController == "Account";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] | MOTOSPEED</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="topline"><div class="container d-flex justify-content-between"><span><i class="bi bi-shield-check"></i> Xe chính hãng · Bảo hành toàn quốc</span><span><i class="bi bi-telephone"></i> Hotline: 1900 6868</span></div></div>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark cyber-navbar sticky-top">
+            <div class="container">
+                <a class="navbar-brand cyber-brand" asp-controller="Home" asp-action="Index"><i class="bi bi-speedometer2 text-danger"></i> MOTO<span>SPEED</span></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-controls="main-nav" aria-expanded="false" aria-label="Mở menu"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="main-nav">
+                    <ul class="navbar-nav mx-auto">
+                        <li class="nav-item"><a class="nav-link @(isHomeActive ? "active" : null)" aria-current="@(isHomeActive ? "page" : null)" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                        <li class="nav-item"><a class="nav-link @(isMotorActive ? "active" : null)" aria-current="@(isMotorActive ? "page" : null)" asp-controller="Motor" asp-action="Index">Xe mô tô</a></li>
+                        <li class="nav-item dropdown"><a class="nav-link dropdown-toggle @(isBrandActive ? "active" : null)" aria-current="@(isBrandActive ? "page" : null)" href="#" data-bs-toggle="dropdown" aria-expanded="false">Thương hiệu</a><ul class="dropdown-menu cyber-dropdown">
+                            <li><a class="dropdown-item @(activeBrand.Equals("Honda", StringComparison.OrdinalIgnoreCase) ? "active" : null)" asp-controller="Motor" asp-action="ByCategory" asp-route-brand="Honda">Honda</a></li><li><a class="dropdown-item @(activeBrand.Equals("Yamaha", StringComparison.OrdinalIgnoreCase) ? "active" : null)" asp-controller="Motor" asp-action="ByCategory" asp-route-brand="Yamaha">Yamaha</a></li><li><a class="dropdown-item @(activeBrand.Equals("Kawasaki", StringComparison.OrdinalIgnoreCase) ? "active" : null)" asp-controller="Motor" asp-action="ByCategory" asp-route-brand="Kawasaki">Kawasaki</a></li><li><a class="dropdown-item @(activeBrand.Equals("Ducati", StringComparison.OrdinalIgnoreCase) ? "active" : null)" asp-controller="Motor" asp-action="ByCategory" asp-route-brand="Ducati">Ducati</a></li><li><a class="dropdown-item @(activeBrand.Equals("Suzuki", StringComparison.OrdinalIgnoreCase) ? "active" : null)" asp-controller="Motor" asp-action="ByCategory" asp-route-brand="Suzuki">Suzuki</a></li><li><a class="dropdown-item @(activeBrand.Equals("Vespa", StringComparison.OrdinalIgnoreCase) ? "active" : null)" asp-controller="Motor" asp-action="ByCategory" asp-route-brand="Vespa">Vespa</a></li>
+                        </ul></li>
+                        <li class="nav-item"><a class="nav-link @(isAboutActive ? "active" : null)" aria-current="@(isAboutActive ? "page" : null)" asp-controller="Home" asp-action="About">Về chúng tôi</a></li>
+                        <li class="nav-item"><a class="nav-link @(isContactActive ? "active" : null)" aria-current="@(isContactActive ? "page" : null)" asp-controller="Home" asp-action="Contact">Liên hệ</a></li>
+                    </ul>
+                    <div class="nav-actions"><div class="dropdown"><button class="nav-icon btn p-0 border-0 @(isAccountActive ? "active" : null)" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Tài khoản"><i class="bi bi-person-circle"></i><span class="d-lg-none ms-2">Tài khoản</span></button><ul class="dropdown-menu dropdown-menu-end cyber-dropdown" data-customer="@(User.IsInRole("Customer").ToString().ToLowerInvariant())">@if (User.IsInRole("Customer")) { <li class="account-greeting">Xin chào, @User.Identity?.Name</li> }<li class="account-login-item"><a class="dropdown-item @(currentAction == "Login" ? "active" : null)" asp-controller="Account" asp-action="Login"><i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập</a></li><li class="account-register-item"><a class="dropdown-item @(currentAction == "Register" ? "active" : null)" asp-controller="Account" asp-action="Register"><i class="bi bi-person-plus me-2"></i>Tạo tài khoản</a></li><li><hr class="dropdown-divider border-secondary" /></li><li class="account-logout-item"><form asp-controller="Account" asp-action="Logout" method="post"><button class="dropdown-item" type="submit"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</button></form></li><li><hr class="dropdown-divider border-secondary" /></li><li><a class="dropdown-item @(currentAction == "Profile" ? "active" : null)" asp-controller="Account" asp-action="Profile"><i class="bi bi-person me-2"></i>Hồ sơ cá nhân</a></li><li><a class="dropdown-item @(currentAction == "Orders" ? "active" : null)" asp-controller="Account" asp-action="Orders"><i class="bi bi-box-seam me-2"></i>Đơn hàng của tôi</a></li><li><a class="dropdown-item @(currentAction == "Saved" ? "active" : null)" asp-controller="Account" asp-action="Saved"><i class="bi bi-heart me-2"></i>Xe yêu thích</a></li></ul></div><a class="btn btn-neon-danger rounded-pill @(isCartActive ? "active" : null)" aria-current="@(isCartActive ? "page" : null)" asp-controller="Shopping" asp-action="Cart"><i class="bi bi-bag"></i><span class="d-lg-none ms-2">Giỏ hàng</span><span class="cart-count" id="cart-count">0</span></a></div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main role="main">@RenderBody()</main>
+    <footer class="cyber-footer mt-5">
+        <div class="container py-5"><div class="row g-4">
+            <div class="col-lg-4"><a class="navbar-brand cyber-brand" asp-controller="Home" asp-action="Index">MOTO<span>SPEED</span></a><p class="text-secondary mt-3">Đồng hành cùng đam mê trên mọi cung đường. Mô tô chính hãng, dịch vụ tận tâm, trải nghiệm xứng tầm.</p><div class="social-links"><a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a><a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a><a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a></div></div>
+            <div class="col-6 col-lg-2"><h6>Khám phá</h6><a asp-controller="Motor" asp-action="Index">Tất cả xe</a><a asp-controller="Motor" asp-action="ByCategory" asp-route-brand="Honda">Xe Honda</a><a asp-controller="Motor" asp-action="ByCategory" asp-route-brand="Yamaha">Xe Yamaha</a><a asp-controller="Home" asp-action="About">Về MOTOSPEED</a></div>
+            <div class="col-6 col-lg-3"><h6>Hỗ trợ khách hàng</h6><a asp-controller="Home" asp-action="Contact">Liên hệ tư vấn</a><a asp-controller="Shopping" asp-action="Cart">Giỏ hàng</a><a asp-controller="Account" asp-action="Orders">Tra cứu đơn hàng</a><a asp-controller="Home" asp-action="Privacy">Chính sách bảo mật</a></div>
+            <div class="col-lg-3"><h6>Showroom</h6><p class="text-secondary mb-2"><i class="bi bi-geo-alt text-danger"></i> 123 Nguyễn Văn Linh, Q.7, TP. Hồ Chí Minh</p><p class="text-secondary mb-2"><i class="bi bi-clock text-danger"></i> 08:00 – 21:00, tất cả các ngày</p><p class="text-secondary"><i class="bi bi-telephone text-danger"></i> 1900 6868</p></div>
+        </div><hr class="border-secondary mt-4"/><div class="d-flex flex-column flex-md-row justify-content-between text-secondary small"><span>© @DateTime.Now.Year MOTOSPEED. Bảo lưu mọi quyền.</span><span>Thông tin giá và sản phẩm mang tính tham khảo.</span></div></div>
+    </footer>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script><script src="~/js/site.js" asp-append-version="true"></script><script src="~/js/password-toggle.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

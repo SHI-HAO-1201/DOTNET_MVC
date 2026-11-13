@@ -1,0 +1,38 @@
+@model MyMvcApp.Models.AccountProfileViewModel
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+}
+
+<section class="page-heading"><div class="container"><div class="eyebrow">KHU VỰC CÁ NHÂN</div><h1>Tài khoản <span>của tôi</span></h1><p>Xem và cập nhật thông tin tài khoản MOTOSPEED.</p></div></section>
+<div class="container py-5">
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div class="account-menu">
+                <div class="account-avatar">@(Model.FullName.Length > 0 ? Model.FullName[..1].ToUpperInvariant() : "K")</div>
+                <strong>@Model.FullName</strong><small>@Model.Email</small>
+                <a class="active" asp-action="Profile"><i class="bi bi-person"></i> Thông tin cá nhân</a>
+                <a asp-action="Orders"><i class="bi bi-box-seam"></i> Đơn hàng của tôi</a>
+                <a asp-action="Saved"><i class="bi bi-heart"></i> Xe yêu thích</a>
+                <a asp-controller="Shopping" asp-action="Cart"><i class="bi bi-bag"></i> Giỏ hàng</a>
+                <form asp-action="Logout" method="post"><button class="account-logout" type="submit"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button></form>
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div class="content-panel">
+                <div class="d-flex justify-content-between align-items-center mb-4"><div><div class="eyebrow">HỒ SƠ CỦA BẠN</div><h2>Thông tin cá nhân</h2></div><span class="badge text-bg-success">Đã đăng nhập</span></div>
+                @if (TempData["Notice"] is string notice) { <div class="alert alert-success" role="status">@notice</div> }
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <form asp-action="Profile" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-6"><label asp-for="FullName" class="form-label">Họ và tên</label><input asp-for="FullName" class="form-control dark-input" autocomplete="name" /><span asp-validation-for="FullName" class="text-danger small"></span></div>
+                        <div class="col-md-6"><label asp-for="Phone" class="form-label">Số điện thoại</label><input asp-for="Phone" class="form-control dark-input" type="tel" autocomplete="tel" /><span asp-validation-for="Phone" class="text-danger small"></span></div>
+                        <div class="col-md-6"><label asp-for="Email" class="form-label">Email</label><input asp-for="Email" class="form-control dark-input" readonly /><small class="text-secondary">Email đăng nhập không thể đổi tại đây.</small></div>
+                        <div class="col-12"><label asp-for="Address" class="form-label">Địa chỉ nhận xe</label><input asp-for="Address" class="form-control dark-input" autocomplete="street-address" /><span asp-validation-for="Address" class="text-danger small"></span></div>
+                        <div class="col-12"><button class="btn btn-neon-danger rounded-pill px-4" type="submit">Lưu thay đổi</button></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
