@@ -1,4 +1,4 @@
-﻿# Bản đồ file và luồng nút trong MyMvcApp
+# Bản đồ file và luồng nút trong MyMvcApp
 
 Tài liệu này mô tả những file ảnh hưởng trực tiếp đến trang, nút, biểu mẫu và request trong ứng dụng MVC. Đây là hướng dẫn để lần theo hoặc bổ sung chức năng; khi code thay đổi, hãy cập nhật lại mục tương ứng.
 
@@ -187,3 +187,42 @@ Cần chủ động tạo endpoint trả `Ok(...)`/`BadRequest(...)` (hoặc con
 ## 11. Khi chạy `dotnet watch`
 
 Chạy lệnh từ thư mục `MyMvcApp`. `dotnet watch` khởi động server từ `Program.cs`, không chạy một view cố định. Browser gọi URL mặc định `/` → route chọn `HomeController.Index()` → controller đọc xe SQL → `Views/Home/Index.cshtml` → `_ViewStart.cshtml` chọn `_Layout.cshtml` → layout render menu/nội dung và nạp JavaScript dùng chung. URL khác sẽ chạy controller/action tương ứng.
+
+## 12. Bản đồ nút trên web: vị trí file chính xác
+
+Gốc project MVC: `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\`. Mỗi đường dẫn dưới đây là địa chỉ đầy đủ trên máy này. Cột “file xử lý” chỉ nơi tiếp theo sau khi bấm; MVC dùng Controller Action, không phải API JSON trừ khi ghi rõ.
+
+| Nút/thao tác | File chứa nút (đường dẫn đầy đủ) | Nơi xử lý / kết quả |
+|---|---|---|
+| Logo, Trang chủ, danh mục xe, Liên hệ, Giỏ hàng, Đăng nhập, menu hồ sơ/đơn hàng/yêu thích/đăng xuất | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Shared\_Layout.cshtml` | Các link gửi GET tới `HomeController`, `MotorController`, `ShoppingController` hoặc `AccountController`. Đăng xuất là form POST → `Controllers\AccountController.cs` action `Logout`. |
+| Mở/đóng menu quản trị, link Dashboard/Sản phẩm/Kho/Đơn hàng/Khách hàng/Khuyến mãi/Báo cáo/Cài đặt | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Shared\_AdminLayout.cshtml` | Link GET tới action tương ứng trong `Controllers\AdminController.cs`; nút đăng xuất POST tới `Logout`. Menu mobile được xử lý thêm bởi `wwwroot\js\admin.js`. |
+| Thêm xe vào giỏ ở trang chủ | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Home\Index.cshtml` (nút `.add-cart` được render theo danh sách xe) | `wwwroot\js\site.js` bắt click, lưu mã/tên/giá/ảnh vào `localStorage` (`motospeed-cart`); không gọi Controller và chưa ghi đơn xuống SQL. |
+| Tìm xe, lọc hãng/loại/giá, sắp xếp, thêm xe vào giỏ ở danh sách | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Motor\Index.cshtml` | Lọc/sắp xếp chạy JavaScript trên card đã tải; `.add-cart` được `wwwroot\js\site.js` lưu vào localStorage. Link xe mở `Motor/Details/{id}`. |
+| Lọc theo hãng/loại và thêm xe vào giỏ | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Motor\ByCategory.cshtml` | GET `Motor/ByCategory?brand=...` → `Controllers\MotorController.cs` action `ByCategory`; nút `.add-cart` vẫn chỉ cập nhật localStorage. |
+| Thêm xe vào giỏ, gọi tư vấn, mở form đánh giá/xe sắp về | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Motor\Details.cshtml` | Thêm giỏ gọi `site.js` → localStorage. Đánh giá POST `Motor/SubmitReview`; tư vấn xe sắp về POST `Motor/RequestIncomingProduct`; cả hai action nằm trong `Controllers\MotorController.cs` và ghi SQL. |
+| Tăng/giảm số lượng, xóa dòng, xóa giỏ, cập nhật tổng tiền | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Shopping\Cart.cshtml` và phần dựng nút động trong `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\wwwroot\js\site.js` | JavaScript cập nhật `motospeed-cart` trong localStorage và vẽ lại giỏ; chưa tạo đơn. |
+| Tiếp tục mua hàng / Tiến hành đặt hàng | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Shopping\Cart.cshtml` | Link GET tới `Motor/Index` hoặc `Shopping/Checkout`; chỉ chuyển trang. |
+| Gửi đơn hàng | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Shopping\Checkout.cshtml` | Form POST → `Controllers\ShoppingController.cs` action `Checkout` → kiểm tra giỏ, giá/tồn kho/mã khuyến mãi, transaction lưu `Orders`/`OrderItems`, cập nhật `XeMays`; JavaScript chuẩn bị `cartJson` trong `wwwroot\js\site.js`. |
+| Đăng nhập, đăng ký, quên mật khẩu, hiện/ẩn mật khẩu | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Account\Login.cshtml`, `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Account\Register.cshtml`, `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Account\ForgotPassword.cshtml` | Form POST → `Controllers\AccountController.cs`. Hiện/ẩn mật khẩu gọi `wwwroot\js\password-toggle.js`; quên mật khẩu hiện chỉ trả thông báo, chưa gửi email/reset thật. |
+| Lưu hồ sơ, xem đơn, bỏ xe yêu thích | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Account\Profile.cshtml`, `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Account\Orders.cshtml`, `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Account\Saved.cshtml` | Hồ sơ POST → `AccountController.Profile`; danh sách đơn được tải từ controller; bỏ yêu thích chạy `site.js` và xóa khỏi localStorage. |
+| Gửi form Liên hệ | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Home\Contact.cshtml` | POST → `Controllers\HomeController.cs` action `Contact`; hiện chỉ hiện thông báo demo, chưa lưu SQL/gửi email. |
+| Thêm sản phẩm mới (mở form) | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\Products.cshtml` | Link GET `CreateProduct` → `Controllers\AdminController.cs` action `CreateProduct` → render `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\ProductForm.cshtml`. |
+| Lưu/thêm/sửa xe — nút “Lưu sản phẩm” | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\ProductForm.cshtml` | POST `SaveProduct` → `Controllers\AdminController.cs` action `SaveProduct` → validate `Models\AdminProductInput.cs` → ghi/cập nhật bảng `dbo.XeMays`. Đây là luồng quản trị thêm xe thật vào database. |
+| Sửa sản phẩm | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\Products.cshtml` | Link GET `EditProduct/{id}` → `AdminController.EditProduct` nạp dữ liệu vào `ProductForm.cshtml`; bấm Lưu mới POST `SaveProduct`. |
+| Ngừng bán, ẩn/hiện xe, xuất CSV | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\Products.cshtml` | POST `DeleteProduct` (ngừng kinh doanh), POST `ToggleProductVisibility`, GET `ExportProducts` → các action cùng tên trong `Controllers\AdminController.cs`. Tìm kiếm/lọc chỉ chạy client-side. |
+| Cập nhật số lượng tồn | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\Inventory.cshtml` | POST `UpdateStock` → `AdminController.UpdateStock` → cập nhật `dbo.XeMays.SoLuong`. |
+| Đổi trạng thái/xóa đơn | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\Orders.cshtml` | POST `UpdateOrderStatus` hoặc `DeleteOrder` → action cùng tên trong `AdminController`; lọc trạng thái là JavaScript. |
+| Thêm/sửa/xóa khách hàng | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\Customers.cshtml`, `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\CustomerForm.cshtml` | GET mở form; POST `SaveCustomer`/`DeleteCustomer` → `AdminController` → bảng `Customers`. |
+| Đánh dấu/xóa yêu cầu tư vấn xe | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\ProductContactRequests.cshtml` | POST `MarkProductContactRequest`/`DeleteProductContactRequest` → action tương ứng trong `AdminController`. |
+| Tạo/sửa/xóa khuyến mãi | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\Promotions.cshtml`, `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\PromotionForm.cshtml` | GET form; POST `SavePromotion`/`DeletePromotion` → `AdminController` → bảng `Promotions`. |
+| Lưu phản hồi, ẩn/hiện/xóa đánh giá | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\Reviews.cshtml` | POST `SaveReviewReply`, `ToggleReviewVisibility`, `DeleteReview` → action tương ứng trong `AdminController`. |
+| Áp dụng bộ lọc/xuất báo cáo | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\Reports.cshtml` | GET `Reports?start=...&end=...` hoặc GET `ExportReport` → `AdminController`; xuất file CSV. |
+| Thêm/sửa/xóa nhân viên | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\Staff.cshtml`, `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\StaffForm.cshtml` | GET form; POST `SaveStaff`/`DeleteStaff` → `AdminController` → bảng `StaffMembers`. |
+| Lưu thông tin/cài đặt cửa hàng | `D:\Hào Lê code\DOTNET\MVC\DOTNET_MVC\MyMvcApp\Views\Admin\Settings.cshtml` | POST `SaveSettings` → `AdminController.SaveSettings` → bảng `StoreSettings`. |
+
+### Mẹo tra nút nhanh trong IDE
+
+- Biết tên nút và muốn thấy markup: mở đường dẫn đầy đủ ở cột giữa rồi tìm chữ hiển thị hoặc `asp-action`.
+- Muốn biết nút gửi tới đâu: xem `asp-controller`/`asp-action` của link hoặc form; mặc định controller tương ứng ở `Controllers\<Tên>Controller.cs`.
+- Muốn biết có ghi SQL không: mở action POST trong controller, xem các lệnh `database.*`/`SaveChangesAsync`; nếu chỉ thấy `site.js` sửa localStorage thì dữ liệu chưa được lưu vào SQL.
+- Nút “Thêm xe” ở trang bán hàng là thêm vào giỏ localStorage. Nút thêm sản phẩm vào kho SQL nằm ở `Views\Admin\Products.cshtml` → `Views\Admin\ProductForm.cshtml` → `Controllers\AdminController.cs`.
